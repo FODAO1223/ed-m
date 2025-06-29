@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Shi - Terminal Confidencial</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00FF00;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    h1 {
+      color: #00FF00;
+      margin-bottom: 20px;
+    }
+
+    input[type="password"] {
+      background: black;
+      color: #00FF00;
+      border: 1px solid #00FF00;
+      padding: 10px;
+      font-size: 1.2em;
+      width: 300px;
+      text-align: center;
+    }
+
+    .mensagem-erro {
+      color: red;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .glitch-block {
+      position: fixed;
+      width: 100px;
+      height: 50px;
+      background: white;
+      z-index: 100;
+      animation: glitchMove 3s forwards;
+    }
+
+    @keyframes glitchMove {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    #captchaModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: black;
+      color: #00FF00;
+      border: 2px solid #00FF00;
+      padding: 20px;
+      z-index: 200;
+      display: none;
+    }
+
+    #captchaModal input {
+      margin-top: 10px;
+      background: black;
+      color: #00FF00;
+      border: 1px solid #00FF00;
+      padding: 5px;
+    }
+
+    #captchaModal button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      background: black;
+      color: #00FF00;
+      border: 1px solid #00FF00;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Shi</h1>
+  <input type="password" id="senha" placeholder="Digite a senha" onkeydown="checarSenha(event)">
+  <div class="mensagem-erro" id="mensagemErro"></div>
+  <div id="glitchContainer"></div>
+  <div id="captchaModal">
+    <p>Confirme se você é um humano</p>
+    <p id="captchaPergunta"></p>
+    <input type="text" id="captchaResposta">
+    <button onclick="verificarCaptcha()">Confirmar</button>
+    <div id="captchaFeedback"></div>
+  </div>
+
+  <script>
+    const senhaCorreta = "IHIR";
+    let captchaInterval;
+    let perguntaAtual = {};
+
+    const perguntasCaptcha = [
+      { pergunta: "Quanto é 3 + 4?", resposta: "7" },
+      { pergunta: "Quanto é 5 - 2?", resposta: "3" },
+      { pergunta: "Quanto é 6 + 1?", resposta: "7" },
+      { pergunta: "Quanto é 2 * 3?", resposta: "6" },
+      { pergunta: "Quanto é 9 - 4?", resposta: "5" },
+      { pergunta: "Quanto é 10 / 2?", resposta: "5" }
+    ];
+
+    function checarSenha(event) {
+      if (event.key === "Enter") {
+        const senhaDigitada = document.getElementById("senha").value;
+        const mensagemErro = document.getElementById("mensagemErro");
+
+        if (senhaDigitada === senhaCorreta) {
+          mensagemErro.textContent = "";
+          ativarGlitch();
+        } else {
+          mensagemErro.textContent = "ACESSO NÃO AUTORIZADO";
+        }
+      }
+    }
+
+    function ativarGlitch() {
+      const glitchContainer = document.getElementById("glitchContainer");
+      let count = 0;
+      const glitchInterval = setInterval(() => {
+        const glitch = document.createElement("div");
+        glitch.className = "glitch-block";
+        glitch.style.top = `${Math.random() * window.innerHeight}px`;
+        glitch.style.left = `${Math.random() * window.innerWidth}px`;
+        glitchContainer.appendChild(glitch);
+        count++;
+        if (count > 30) {
+          clearInterval(glitchInterval);
+          setTimeout(() => {
+            document.body.innerHTML = "";
+            document.body.style.background = "white";
+          }, 1000);
+        }
+      }, 100);
+    }
+
+    function mostrarCaptcha() {
+      const perguntaIndex = Math.floor(Math.random() * perguntasCaptcha.length);
+      perguntaAtual = perguntasCaptcha[perguntaIndex];
+      document.getElementById("captchaPergunta").textContent = perguntaAtual.pergunta;
+      document.getElementById("captchaModal").style.display = "block";
+    }
+
+    function verificarCaptcha() {
+      const resposta = document.getElementById("captchaResposta").value.trim();
+      const feedback = document.getElementById("captchaFeedback");
+      if (resposta === perguntaAtual.resposta) {
+        feedback.textContent = "Verificado!";
+        setTimeout(() => {
+          document.getElementById("captchaModal").style.display = "none";
+          document.getElementById("captchaResposta").value = "";
+          feedback.textContent = "";
+        }, 1000);
+      } else {
+        feedback.textContent = "Resposta incorreta.";
+      }
+    }
+
+    captchaInterval = setInterval(mostrarCaptcha, 15000);
+  </script>
+</body>
+</html>
